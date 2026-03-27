@@ -1,39 +1,28 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+## ⚙️ Setup & Permissions
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/tools/pub/writing-package-pages).
+Since `smart_media_picker` handles native files, camera, and gallery access, you must add the following native permissions to your app.
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/to/develop-packages).
--->
+### Android
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+Add the following permissions to your `android/app/src/main/AndroidManifest.xml` file, inside the `<manifest>` tag:
 
-## Features
-
-TODO: List what your package can do. Maybe include images, gifs, or videos.
-
-## Getting started
-
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
-
-## Usage
-
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
-
-```dart
-const like = 'sample';
+```xml
+<uses-permission android:name="android.permission.INTERNET" />
+<uses-permission android:name="android.permission.CAMERA" />
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+<uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+<uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
 ```
 
-## Additional information
+### iOS
 
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+Add the following keys to your `ios/Runner/Info.plist` file. Without these, your app will crash when trying to open the camera or gallery!
+
+```xml
+<key>NSPhotoLibraryUsageDescription</key>
+<string>This app requires access to the photo library to select media.</string>
+<key>NSCameraUsageDescription</key>
+<string>This app requires access to the camera to take photos and videos.</string>
+<key>NSMicrophoneUsageDescription</key>
+<string>This app requires access to the microphone to record video audio.</string>
