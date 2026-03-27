@@ -1,13 +1,13 @@
-library smart_media_picker;
+ 
+// Exporting the UI Widget
+export 'src/presentation/smart_media_field.dart'; 
 
-export 'src/core/exceptions.dart';
+// Exporting the Data Models & Configuration
 export 'src/core/media_config.dart';
 export 'src/domain/media_model.dart';
+
+// Exporting the Engine (For headless usage)
 export 'src/domain/media_service.dart';
-export 'src/presentation/smart_media_field.dart';
-export 'src/presentation/widgets/image_previewer.dart';
-export 'src/presentation/widgets/video_previewer.dart';
-class Calculator {
-  /// Returns [value] plus 1.
-  int addOne(int value) => value + 1;
-}
+
+// Exporting Custom Error Handling
+export 'src/core/exceptions.dart';
