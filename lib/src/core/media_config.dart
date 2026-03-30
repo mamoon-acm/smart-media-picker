@@ -1,10 +1,10 @@
 class MediaConfig {
   /// Maximum allowed size in Megabytes (MB). Defaults to 10MB.
   final double maxSizeMB;
-  
+
   /// Image compression quality (0 to 100). Defaults to 70 for optimal size/quality ratio.
   final int imageQuality;
-  
+
   /// Maximum duration for videos. Defaults to 60 seconds.
   final Duration maxVideoDuration;
 

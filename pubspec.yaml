@@ -1,10 +1,10 @@
 name: smart_media_picker
-description: "A new Flutter package project."
-version: 0.0.1
-homepage:
+description: A highly customizable, all-in-one Flutter widget for picking, compressing, and displaying images and videos with built-in state management.
+version: 1.0.0
+homepage: https://github.com/mamoon-acm/smart-media-picker
 
 environment:
-  sdk: ^3.10.7
+  sdk: ^3.10.7  
   flutter: ">=1.17.0"
 
 dependencies:

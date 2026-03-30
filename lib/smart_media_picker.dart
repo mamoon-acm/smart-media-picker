@@ -1,6 +1,5 @@
- 
 // Exporting the UI Widget
-export 'src/presentation/smart_media_field.dart'; 
+export 'src/presentation/smart_media_field.dart';
 
 // Exporting the Data Models & Configuration
 export 'src/core/media_config.dart';

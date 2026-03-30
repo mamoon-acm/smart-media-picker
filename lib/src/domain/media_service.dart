@@ -21,7 +21,7 @@ class MediaService {
       final XFile? pickedFile = type == MediaType.image
           ? await _picker.pickImage(source: source)
           : await _picker.pickVideo(
-              source: source, 
+              source: source,
               maxDuration: config.maxVideoDuration,
             );
 
@@ -33,7 +33,10 @@ class MediaService {
 
       // Process based on type
       if (type == MediaType.image) {
-        processedFile = await _compressImage(processedFile, config.imageQuality);
+        processedFile = await _compressImage(
+          processedFile,
+          config.imageQuality,
+        );
       }
 
       // Check final file size
@@ -61,14 +64,17 @@ class MediaService {
     } on MediaSizeExceededException {
       rethrow; // Pass size validation up
     } catch (e) {
-      throw MediaProcessingException('An error occurred while processing media: $e');
+      throw MediaProcessingException(
+        'An error occurred while processing media: $e',
+      );
     }
   }
 
   /// High-performance native image compression
   Future<File> _compressImage(File file, int quality) async {
     final dir = await getTemporaryDirectory();
-    final targetPath = '${dir.path}/compressed_${DateTime.now().millisecondsSinceEpoch}.jpg';
+    final targetPath =
+        '${dir.path}/compressed_${DateTime.now().millisecondsSinceEpoch}.jpg';
 
     final result = await FlutterImageCompress.compressAndGetFile(
       file.absolute.path,
@@ -77,7 +83,8 @@ class MediaService {
       format: CompressFormat.jpeg,
     );
 
-    if (result == null) throw MediaProcessingException('Image compression failed.');
+    if (result == null)
+      throw MediaProcessingException('Image compression failed.');
     return File(result.path);
   }
 
