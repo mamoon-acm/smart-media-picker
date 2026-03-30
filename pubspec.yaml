@@ -1,6 +1,6 @@
 name: smart_media_picker
 description: A highly customizable, all-in-one Flutter widget for picking, compressing, and displaying images and videos with built-in state management.
-version: 1.0.0
+version: 1.0.1
 homepage: https://github.com/mamoon-acm/smart-media-picker
 issue_tracker: https://gitlab.com/mamoon-acm/smart_media_field/-/issues
 topics:

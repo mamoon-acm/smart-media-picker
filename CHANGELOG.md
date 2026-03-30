@@ -1,4 +1,5 @@
-
+## 1.0.1
+* Added a comprehensive example project to demonstrate basic and custom styled usage of `SmartMediaField` without external state managers.
 ## 1.0.0
 
 * Initial release.
