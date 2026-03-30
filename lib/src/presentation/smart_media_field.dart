@@ -90,12 +90,12 @@ class _SmartMediaFieldState extends State<SmartMediaField> {
 
   SmartMedia? _selectedMedia;
   bool _isLoading = false;
-  String? _errorMessage;
+  // String? _errorMessage;
 
   Future<void> _handleMediaPick() async {
     setState(() {
       _isLoading = true;
-      _errorMessage = null;
+      // _errorMessage = null;
     });
 
     try {
@@ -114,7 +114,7 @@ class _SmartMediaFieldState extends State<SmartMediaField> {
     } catch (e) {
       setState(() {
         _isLoading = false;
-        _errorMessage = e.toString();
+        // _errorMessage = e.toString();
       });
     }
   }
@@ -122,7 +122,7 @@ class _SmartMediaFieldState extends State<SmartMediaField> {
   void _clearMedia() {
     setState(() {
       _selectedMedia = null;
-      _errorMessage = null;
+      // _errorMessage = null;
     });
     // Trigger the optional clear callback so the parent form can update its state
     if (widget.onClear != null) {
@@ -152,7 +152,7 @@ class _SmartMediaFieldState extends State<SmartMediaField> {
         ),
 
         // Optional Error Handling
-        // TODO: later we will implement error message display
+
         // if (_errorMessage != null) ...[
         //   const SizedBox(height: 8),
         //   Text(

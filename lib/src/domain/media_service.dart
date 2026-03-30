@@ -83,8 +83,9 @@ class MediaService {
       format: CompressFormat.jpeg,
     );
 
-    if (result == null)
+    if (result == null) {
       throw MediaProcessingException('Image compression failed.');
+    }
     return File(result.path);
   }
 
