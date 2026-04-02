@@ -44,7 +44,7 @@ class _MyHomePageState extends State<MyHomePage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'Success! Image size: ${_profileImage!.sizeInMB.toStringAsFixed(2)} MB',
+          'Success! Image size: ${_profileImage!.sizeInMb.toStringAsFixed(2)} MB',
         ),
         backgroundColor: Colors.green,
       ),
@@ -106,6 +106,29 @@ class _MyHomePageState extends State<MyHomePage> {
               },
               onClear: () {
                 setState(() => _promoVideo = null);
+              },
+            ),
+
+            const SizedBox(height: 32),
+            const Text(
+              'Document Upload (PDFs, etc.)',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+
+            SmartMediaField(
+              mediaType: MediaType.file, // Test the new file type!
+              buttonText: 'Select Resume or Document',
+              height: 120,
+              allowFiles: true,
+
+              emptyIcon: Icons.file_present,
+              backgroundColor: Colors.orange.shade50,
+              borderColor: Colors.orange.shade200,
+              iconColor: Colors.orange,
+              onMediaReady: (media) {
+                print('File Selected: ${media.fileName}');
+                // Handle the file...
               },
             ),
 

@@ -1,6 +1,6 @@
 import 'dart:io';
 
-enum MediaType { image, video }
+enum MediaType { image, video, file }
 
 class SmartMedia {
   /// The final, processed (compressed) file ready for upload.
@@ -12,18 +12,16 @@ class SmartMedia {
   /// A generated thumbnail (Only applies if type is MediaType.video).
   final File? thumbnail;
 
-  /// The final size of the file in bytes. Useful for UI feedback.
-  final int sizeInBytes;
+  final double sizeInMb;
+  final String? fileName;
 
   SmartMedia({
     required this.file,
     required this.type,
-    required this.sizeInBytes,
+    required this.sizeInMb,
     this.thumbnail,
+    this.fileName,
   });
-
-  /// A handy helper to get the size in Megabytes for UI display
-  double get sizeInMB => sizeInBytes / (1024 * 1024);
 
   /// Helper to check if a thumbnail exists
   bool get hasThumbnail => thumbnail != null;

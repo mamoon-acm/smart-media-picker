@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:file_picker/file_picker.dart'; // Added File Picker import
 
 import '../core/exceptions.dart';
 import '../core/media_config.dart';
@@ -11,7 +12,7 @@ import 'media_model.dart';
 class MediaService {
   final ImagePicker _picker = ImagePicker();
 
-  /// Main entry point to pick and process media
+  /// Main entry point to pick and process image/video media
   Future<SmartMedia> pickMedia({
     required MediaType type,
     required ImageSource source,
@@ -41,9 +42,12 @@ class MediaService {
 
       // Check final file size
       final int sizeInBytes = await processedFile.length();
+      final double calculatedSizeInMB =
+          sizeInBytes / (1024 * 1024); // <-- Add this calculation
+
       if (sizeInBytes > config.maxBytes) {
         throw MediaSizeExceededException(
-          'File size (${(sizeInBytes / (1024 * 1024)).toStringAsFixed(2)}MB) exceeds limit of ${config.maxSizeMB}MB.',
+          'File size (${calculatedSizeInMB.toStringAsFixed(2)}MB) exceeds limit of ${config.maxSizeMB}MB.',
         );
       }
 
@@ -56,7 +60,7 @@ class MediaService {
       return SmartMedia(
         file: processedFile,
         type: type,
-        sizeInBytes: sizeInBytes,
+        sizeInMb: calculatedSizeInMB,
         thumbnail: thumbnailFile,
       );
     } on MediaSelectionCancelledException {
@@ -66,6 +70,51 @@ class MediaService {
     } catch (e) {
       throw MediaProcessingException(
         'An error occurred while processing media: $e',
+      );
+    }
+  }
+
+  /// New entry point specifically for picking generic files (PDFs, Docs, etc.)
+  Future<SmartMedia> pickFile({
+    required MediaConfig config,
+    List<String>? allowedExtensions,
+  }) async {
+    try {
+      // Pick the file
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: allowedExtensions != null ? FileType.custom : FileType.any,
+        allowedExtensions: allowedExtensions,
+      );
+
+      if (result == null || result.files.single.path == null) {
+        throw MediaSelectionCancelledException();
+      }
+
+      File processedFile = File(result.files.single.path!);
+
+      // Check final file size to ensure it respects the MediaConfig
+      final int sizeInBytes = await processedFile.length();
+      final double calculatedSizeInMB = sizeInBytes / (1024 * 1024);
+
+      if (sizeInBytes > config.maxBytes) {
+        throw MediaSizeExceededException(
+          'File size (${calculatedSizeInMB.toStringAsFixed(2)}MB) exceeds limit of ${config.maxSizeMB}MB.',
+        );
+      }
+
+      return SmartMedia(
+        file: processedFile,
+        type: MediaType.file,
+        sizeInMb: calculatedSizeInMB,
+        fileName: result.files.single.name,
+      );
+    } on MediaSelectionCancelledException {
+      rethrow;
+    } on MediaSizeExceededException {
+      rethrow;
+    } catch (e) {
+      throw MediaProcessingException(
+        'An error occurred while processing the file: $e',
       );
     }
   }
@@ -96,7 +145,7 @@ class MediaService {
       video: videoPath,
       thumbnailPath: dir.path,
       imageFormat: ImageFormat.JPEG,
-      maxHeight: 400, // Keep memory footprint low
+      maxHeight: 400,
       quality: 75,
     );
 

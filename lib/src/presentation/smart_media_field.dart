@@ -6,57 +6,27 @@ import '../domain/media_model.dart';
 import '../domain/media_service.dart';
 
 class SmartMediaField extends StatefulWidget {
-  /// Callback triggered when the media is successfully picked and compressed
   final Function(SmartMedia) onMediaReady;
-
-  /// Callback triggered when the user clears the selected media
   final VoidCallback? onClear;
-
-  /// Configuration for file size and quality
   final MediaConfig config;
-
-  /// Whether to pick an image or a video
   final MediaType mediaType;
-
-  /// Custom text for the pick button
   final String buttonText;
-
-  /// Box fit for the media
   final BoxFit boxFit;
-
-  /// Height of the media container
   final double height;
-
-  /// Width of the media container
   final double width;
 
+  final bool allowFiles;
+  final List<String>? allowedExtensions;
+
   // --- Design Customization Properties ---
-
-  /// Background color of the container
   final Color backgroundColor;
-
-  /// Border color of the container
   final Color borderColor;
-
-  /// Border radius of the container
   final double borderRadius;
-
-  /// Icon displayed in the empty state
   final IconData emptyIcon;
-
-  /// Color of the empty state icon
   final Color iconColor;
-
-  /// Text style for the empty state text
   final TextStyle? textStyle;
-
-  /// Color of the loading indicator
   final Color? loadingIndicatorColor;
-
-  /// Icon used for the clear button
   final IconData clearIcon;
-
-  /// Color of the clear button icon
   final Color clearIconColor;
 
   const SmartMediaField({
@@ -69,6 +39,19 @@ class SmartMediaField extends StatefulWidget {
     this.boxFit = BoxFit.cover,
     this.height = 150,
     this.width = double.infinity,
+    this.allowFiles = false,
+    this.allowedExtensions = const [
+      "pdf",
+      "doc",
+      "docx",
+      "xls",
+      "xlsx",
+      "ppt",
+      "pptx",
+      "txt",
+      "csv",
+      "rtf",
+    ],
     // Default design values
     this.backgroundColor = const Color(0xFFF5F5F5),
     this.borderColor = const Color(0xFFBDBDBD),
@@ -90,18 +73,14 @@ class _SmartMediaFieldState extends State<SmartMediaField> {
 
   SmartMedia? _selectedMedia;
   bool _isLoading = false;
-  // String? _errorMessage;
 
-  Future<void> _handleMediaPick() async {
-    setState(() {
-      _isLoading = true;
-      // _errorMessage = null;
-    });
+  Future<void> _handleMediaPick({required ImageSource source}) async {
+    setState(() => _isLoading = true);
 
     try {
       final media = await _mediaService.pickMedia(
         type: widget.mediaType,
-        source: ImageSource.gallery,
+        source: source,
         config: widget.config,
       );
 
@@ -112,22 +91,33 @@ class _SmartMediaFieldState extends State<SmartMediaField> {
 
       widget.onMediaReady(media);
     } catch (e) {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _handleFilePick() async {
+    setState(() => _isLoading = true);
+
+    try {
+      final media = await _mediaService.pickFile(
+        config: widget.config,
+        allowedExtensions: widget.allowedExtensions,
+      );
+
       setState(() {
+        _selectedMedia = media;
         _isLoading = false;
-        // _errorMessage = e.toString();
       });
+
+      widget.onMediaReady(media);
+    } catch (e) {
+      setState(() => _isLoading = false);
     }
   }
 
   void _clearMedia() {
-    setState(() {
-      _selectedMedia = null;
-      // _errorMessage = null;
-    });
-    // Trigger the optional clear callback so the parent form can update its state
-    if (widget.onClear != null) {
-      widget.onClear!();
-    }
+    setState(() => _selectedMedia = null);
+    if (widget.onClear != null) widget.onClear!();
   }
 
   @override
@@ -138,7 +128,7 @@ class _SmartMediaFieldState extends State<SmartMediaField> {
         GestureDetector(
           onTap: (_isLoading || _selectedMedia != null)
               ? null
-              : _handleMediaPick,
+              : _showSourceBottomSheet,
           child: Container(
             height: widget.height,
             width: widget.width,
@@ -150,16 +140,6 @@ class _SmartMediaFieldState extends State<SmartMediaField> {
             child: _buildContent(),
           ),
         ),
-
-        // Optional Error Handling
-
-        // if (_errorMessage != null) ...[
-        //   const SizedBox(height: 8),
-        //   Text(
-        //     _errorMessage!,
-        //     style: const TextStyle(color: Colors.red, fontSize: 12),
-        //   ),
-        // ],
       ],
     );
   }
@@ -185,20 +165,44 @@ class _SmartMediaFieldState extends State<SmartMediaField> {
       return Stack(
         fit: StackFit.expand,
         children: [
-          // Media Display
-          ClipRRect(
-            borderRadius: BorderRadius.circular(
-              widget.borderRadius - 1,
-            ), // -1 to fit inside border smoothly
-            child: Image.file(
-              _selectedMedia!.type == MediaType.image
-                  ? _selectedMedia!.file
-                  : _selectedMedia!.thumbnail!,
-              fit: widget.boxFit,
+          if (_selectedMedia!.type == MediaType.file)
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.insert_drive_file,
+                    size: 48,
+                    color: widget.iconColor,
+                  ),
+                  const SizedBox(height: 8),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text(
+                      _selectedMedia!.fileName ?? 'Document Selected',
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: widget.iconColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            ClipRRect(
+              borderRadius: BorderRadius.circular(widget.borderRadius - 1),
+              child: Image.file(
+                _selectedMedia!.type == MediaType.image
+                    ? _selectedMedia!.file
+                    : _selectedMedia!.thumbnail!,
+                fit: widget.boxFit,
+              ),
             ),
-          ),
 
-          // Video Play Icon Overlay
           if (_selectedMedia!.type == MediaType.video)
             const Center(
               child: Icon(
@@ -208,7 +212,6 @@ class _SmartMediaFieldState extends State<SmartMediaField> {
               ),
             ),
 
-          // File Size Indicator (Bottom Right)
           Positioned(
             bottom: 8,
             right: 8,
@@ -219,13 +222,12 @@ class _SmartMediaFieldState extends State<SmartMediaField> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                '${_selectedMedia!.sizeInMB.toStringAsFixed(2)} MB',
+                '${_selectedMedia!.sizeInMb.toStringAsFixed(2)} MB',
                 style: const TextStyle(color: Colors.white, fontSize: 10),
               ),
             ),
           ),
 
-          // Clear Button (Top Right)
           Positioned(
             top: 8,
             right: 8,
@@ -249,7 +251,6 @@ class _SmartMediaFieldState extends State<SmartMediaField> {
       );
     }
 
-    // Default Empty State
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -264,6 +265,109 @@ class _SmartMediaFieldState extends State<SmartMediaField> {
           ),
         ],
       ),
+    );
+  }
+
+  void _showSourceBottomSheet() {
+    // 1. Determine if Camera/Gallery should be visible
+    final bool showCameraAndGallery = widget.mediaType != MediaType.file;
+
+    // 2. Determine if the File selection should be visible
+    final bool showFileOption =
+        widget.mediaType == MediaType.file || widget.allowFiles;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: widget.backgroundColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Top drag indicator
+                Container(
+                  height: 4,
+                  width: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade400,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Only show Camera/Gallery if the mediaType is NOT a generic file
+                if (showCameraAndGallery) ...[
+                  // Camera Option
+                  ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: Colors.blue.shade50,
+                      child: Icon(
+                        widget.mediaType == MediaType.video
+                            ? Icons.videocam
+                            : Icons.camera_alt,
+                        color: Colors.blue,
+                      ),
+                    ),
+                    title: Text(
+                      widget.mediaType == MediaType.video
+                          ? 'Record a Video'
+                          : 'Take a Photo',
+                    ),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _handleMediaPick(source: ImageSource.camera);
+                    },
+                  ),
+
+                  // Gallery Option
+                  ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: Colors.purple.shade50,
+                      child: Icon(
+                        widget.mediaType == MediaType.video
+                            ? Icons.video_library
+                            : Icons.photo_library,
+                        color: Colors.purple,
+                      ),
+                    ),
+                    title: Text(
+                      widget.mediaType == MediaType.video
+                          ? 'Choose Video from Gallery'
+                          : 'Choose Photo from Gallery',
+                    ),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _handleMediaPick(source: ImageSource.gallery);
+                    },
+                  ),
+                ],
+
+                // Show File Option if specifically requested OR allowFiles is enabled
+                if (showFileOption)
+                  ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: Colors.orange.shade50,
+                      child: const Icon(
+                        Icons.insert_drive_file,
+                        color: Colors.orange,
+                      ),
+                    ),
+                    title: const Text('Select Document (PDF, etc.)'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _handleFilePick();
+                    },
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

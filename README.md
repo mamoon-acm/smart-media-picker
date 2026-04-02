@@ -5,12 +5,12 @@ A highly customizable, all-in-one Flutter widget for picking, compressing, and d
 It handles the heavy lifting of media selection, loading states, and error handling while giving you complete control over the UI design to match your app's theme.
 
 ## Features
-* 📸 Pick Images or 🎥 Videos easily.
-* 🗜️ Built-in compression and thumbnail generation.
-* 🎨 Fully customizable design (colors, borders, icons, text styles).
-* 🔄 Handles its own loading and error states.
-* 🗑️ Built-in clear/discard functionality.
-* 📏 Displays actual file size after compression.
+* 📸 Pick Images, 🎥 Videos, or 📄 Documents (PDFs, Docs, etc.) seamlessly.
+* 🎨 Fully customizable UI (tweak colors, borders, icons, and text).
+* 📱 **Smart Bottom Sheet:** Automatically adapts options based on the requested media type.
+* 🗜️ Built-in compression and video thumbnail generation.
+* 📏 Automatic file-size overlay and validation.
+* ♻️ Handles its own loading, error, and clear states out of the box.
 
 ## Platform Setup
 
@@ -31,15 +31,32 @@ Add the following keys to your `ios/Runner/Info.plist`:
 <string>We need microphone access to record audio with your videos.</string>
 
 
-### Basic Usage
-<!-- SmartMediaField(
+## Basic Usage
+
+### 1. Image or Video Picker
+By default, the widget allows users to pick an image from their camera or gallery.
+```dart
+SmartMediaField(
   mediaType: MediaType.image,
   buttonText: 'Upload Profile Picture',
   onMediaReady: (SmartMedia media) {
-    // Handle your compressed, ready-to-upload file here
-    print('Media size: ${media.sizeInMB} MB');
+    print('Image size: ${media.sizeInMb} MB');
   },
-  onClear: () {
-    // Handle media removal in your state manager
-  },
-) -->
+)
+
+
+### 2. Document Picker
+To specifically ask for a document (like a PDF or Resume), set the mediaType to file. You can also restrict exactly which extensions are allowed!
+```dart
+  SmartMediaField(
+      mediaType: MediaType.file,
+       buttonText: 'Select Resume (PDF/DOC)',
+         allowedExtensions: const [
+           'pdf',
+           'doc',
+           'docx',
+        ], // Restrict file types
+        onMediaReady: (SmartMedia media) {
+          print('Selected File: ${media.fileName}');
+        },
+    ),
